@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Language Translator</title>
+  <link href="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.min.css" rel="stylesheet">
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+    
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: blue;
+      padding: 10px;
+    }
+
+    .container {
+      max-width: 700px;
+      width: 100%;
+      padding: 30px;
+      background: #fff;
+      border-radius: 1rem;
+      box-shadow: 0px 0px 36px -5px #094221;
+    }
+
+    .text-input textarea {
+      width: 100%;
+      height: 250px;
+      border: none;
+      outline: none;
+      resize: none;
+      font-size: 18px;
+      padding: 10px;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 15px;
+      border-top: 1px solid #ccc;
+    }
+
+    .controls select {
+      font-size: 18px;
+      border: none;
+      outline: none;
+      background: none;
+    }
+
+    .controls ion-icon {
+      font-size: 1.7rem;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .container button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 20px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 0.3rem;
+      background: #333;
+      color: #fff;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="text-input">
+      <textarea spellcheck="false" class="from-text" placeholder="Enter text"></textarea>
+      <ul class="controls">
+        <li class="row">
+          <select></select>
+          <ion-icon id="from" name="volume-medium-outline"></ion-icon>
+          <ion-icon id="from" name="copy-outline"></ion-icon>
+        </li>
+        <li class="exchange">
+          <ion-icon name="swap-vertical"></ion-icon>
+        </li>
+        <li class="row">
+          <select></select>
+          <ion-icon id="to" name="volume-medium-outline"></ion-icon>
+          <ion-icon id="to" name="copy-outline"></ion-icon>
+        </li>
+      </ul>
+      <textarea spellcheck="false" readonly disabled class="to-text" placeholder="Translation"></textarea>
+    </div>
+    <button>Translate</button>
+  </div>
+
+  <script>
+    const languages = {
+      "en-GB": "English",
+      "es-ES": "Spanish",
+      "fr-FR": "French",
+      "de-DE": "German",
+      "hi-IN": "Hindi",
+      "gu-IN": "Gujarati",
+      "ta-IN": "Tamil",
+      "te-IN": "Telugu",
+      "kn-IN": "Kannada",
+      "mr-IN": "Marathi",
+      "bn-IN": "Bengali",
+      "ur-PK": "Urdu",
+      "pa-IN": "Punjabi",
+      "zh-CN": "Chinese",
+      "ar-SA": "Arabic",
+      "ru-RU": "Russian",
+      "ja-JP": "Japanese",
+      "ko-KR": "Korean",
+      "it-IT": "Italian",
+      "pt-PT": "Portuguese",
+      "nl-NL": "Dutch",
+      "sv-SE": "Swedish",
+      "tr-TR": "Turkish"
+    };
+
+    const fromText = document.querySelector(".from-text"),
+      toText = document.querySelector(".to-text"),
+      exchangeIcon = document.querySelector(".exchange"),
+      selectTags = document.querySelectorAll("select"),
+      translateBtn = document.querySelector("button"),
+      icons = document.querySelectorAll("ion-icon");
+
+    selectTags.forEach((tag, id) => {
+      for (let lang_code in languages) {
+        let selected = id === 0 ? (lang_code === "en-GB" ? "selected" : "") : (lang_code === "hi-IN" ? "selected" : "");
+        let option = `<option value="${lang_code}" ${selected}>${languages[lang_code]}</option>`;
+        tag.insertAdjacentHTML("beforeend", option);
+      }
+    });
+
+    translateBtn.addEventListener("click", () => {
+      let text = fromText.value.trim(),
+        translateFrom = selectTags[0].value,
+        translateTo = selectTags[1].value;
+      if (!text) return;
+      
+      toText.setAttribute("placeholder", "Translating...");
+      let apiUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${translateFrom}|${translateTo}`;
+      
+      fetch(apiUrl)
+        .then((res) => res.json())
+        .then((data) => {
+          toText.value = data.responseData.translatedText || "Translation not found";
+          toText.setAttribute("placeholder", "Translation");
+        })
+        .catch(() => {
+          toText.value = "Error in translation";
+        });
+    });
+
+    exchangeIcon.addEventListener("click", () => {
+      let tempText = fromText.value,
+        tempLang = selectTags[0].value;
+      fromText.value = toText.value;
+      toText.value = tempText;
+      selectTags[0].value = selectTags[1].value;
+      selectTags[1].value = tempLang;
+    });
+
+    icons.forEach((icon) => {
+      icon.addEventListener("click", ({ target }) => {
+        if (!fromText.value && !toText.value) return;
+
+        if (target.getAttribute("name") === "copy-outline") {
+          navigator.clipboard.writeText(target.id === "from" ? fromText.value : toText.value);
+        } else {
+          let utterance = new SpeechSynthesisUtterance(target.id === "from" ? fromText.value : toText.value);
+          utterance.lang = target.id === "from" ? selectTags[0].value : selectTags[1].value;
+          speechSynthesis.speak(utterance);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
