@@ -33,9 +33,6 @@ bash
 Collapse
 
 Wrap
-
-Copy
-git clone https://github.com/your-username/language-translator-audio.git
 Open the Project:
 Navigate to the project directory.
 Open index.html in a modern web browser (Chrome, Firefox, or Edge recommended).
