@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Language Translator with Audio Output</title>
+  <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: blue;
+      padding: 10px;
+    }
+
+    .container {
+      max-width: 700px;
+      width: 100%;
+      padding: 30px;
+      background: #fff;
+      border-radius: 1rem;
+      box-shadow: 0px 0px 36px -5px #094221;
+      text-align: center;
+    }
+
+    .text-input textarea {
+      width: 100%;
+      height: 150px;
+      border: none;
+      outline: none;
+      resize: none;
+      font-size: 18px;
+      padding: 10px;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 15px;
+      border-top: 1px solid #ccc;
+    }
+
+    .controls select {
+      font-size: 18px;
+      border: none;
+      outline: none;
+      background: none;
+    }
+
+    .controls ion-icon {
+      font-size: 1.7rem;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .container button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 10px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 0.3rem;
+      background: #333;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .container button:disabled {
+      background: #666;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="text-input">
+      <textarea spellcheck="false" class="from-text" placeholder="Type text to translate"></textarea>
+      <ul class="controls">
+        <li class="row">
+          <select id="from-lang"></select>
+          <ion-icon id="from-copy" name="copy-outline"></ion-icon>
+        </li>
+        <li class="exchange">
+          <ion-icon name="swap-vertical-outline"></ion-icon>
+        </li>
+        <li class="row">
+          <select id="to-lang"></select>
+          <ion-icon id="to-speak" name="volume-medium-outline"></ion-icon>
+          <ion-icon id="to-copy" name="copy-outline"></ion-icon>
+        </li>
+      </ul>
+      <textarea spellcheck="false" readonly class="to-text" placeholder="Translation"></textarea>
+    </div>
+    <button id="translate-btn">Translate</button>
+    <button id="speak-btn">Speak Translation</button>
+  </div>
+
+  <script>
+    const languages = {
+      "en-GB": "English",
+      "es-ES": "Spanish",
+      "fr-FR": "French",
+      "de-DE": "German",
+      "hi-IN": "Hindi",
+      "gu-IN": "Gujarati",
+      "ta-IN": "Tamil",
+      "te-IN": "Telugu",
+      "kn-IN": "Kannada",
+      "mr-IN": "Marathi",
+      "bn-IN": "Bengali",
+      "ur-PK": "Urdu",
+      "pa-IN": "Punjabi",
+      "zh-CN": "Chinese",
+      "ar-SA": "Arabic",
+      "ru-RU": "Russian",
+      "ja-JP": "Japanese",
+      "ko-KR": "Korean",
+      "it-IT": "Italian",
+      "pt-PT": "Portuguese",
+      "nl-NL": "Dutch",
+      "sv-SE": "Swedish",
+      "tr-TR": "Turkish"
+    };
+
+    const fromText = document.querySelector(".from-text"),
+          toText = document.querySelector(".to-text"),
+          exchangeIcon = document.querySelector(".exchange"),
+          selectTags = document.querySelectorAll("select"),
+          translateBtn = document.getElementById("translate-btn"),
+          speakBtn = document.getElementById("speak-btn");
+
+    // Check if speech synthesis is supported
+    const speechSupported = 'speechSynthesis' in window;
+    if (!speechSupported) {
+      speakBtn.disabled = true;
+      speakBtn.textContent = "Speech Not Supported";
+      console.warn("Speech synthesis not supported in this browser");
+    }
+
+    // Populate language selectors
+    selectTags.forEach((tag, id) => {
+      for (let lang_code in languages) {
+        let selected = id === 0 ? (lang_code === "en-GB" ? "selected" : "") : 
+                       (lang_code === "hi-IN" ? "selected" : "");
+        let option = `<option value="${lang_code}" ${selected}>${languages[lang_code]}</option>`;
+        tag.insertAdjacentHTML("beforeend", option);
+      }
+    });
+
+    // Text Translation
+    translateBtn.addEventListener("click", () => {
+      let text = fromText.value.trim(),
+          translateFrom = selectTags[0].value,
+          translateTo = selectTags[1].value;
+      if (!text) {
+        toText.value = "";
+        return;
+      }
+      
+      translateBtn.disabled = true;
+      toText.setAttribute("placeholder", "Translating...");
+      let apiUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${translateFrom}|${translateTo}`;
+      
+      fetch(apiUrl)
+        .then(res => res.json())
+        .then(data => {
+          toText.value = data.responseData.translatedText || "Translation not available";
+          toText.setAttribute("placeholder", "Translation");
+        })
+        .catch(error => {
+          toText.value = "Error in translation";
+          toText.setAttribute("placeholder", "Translation");
+          console.error("Translation error:", error);
+        })
+        .finally(() => {
+          translateBtn.disabled = false;
+        });
+    });
+
+    // Speak translated text
+    function speakText(text, language) {
+      if (!speechSupported) return;
+      
+      // Cancel any ongoing speech
+      window.speechSynthesis.cancel();
+      
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = language;
+      utterance.volume = 1;
+      utterance.rate = 1;
+      utterance.pitch = 1;
+
+      // Error handling
+      utterance.onerror = (event) => {
+        console.error("Speech synthesis error:", event.error);
+        alert("Error speaking the text: " + event.error);
+        speakBtn.disabled = false;
+      };
+
+      utterance.onstart = () => {
+        speakBtn.disabled = true;
+      };
+
+      utterance.onend = () => {
+        speakBtn.disabled = false;
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    speakBtn.addEventListener("click", () => {
+      const translatedText = toText.value.trim();
+      const lang = selectTags[1].value;
+      
+      if (!translatedText) {
+        alert("Please translate some text first");
+        return;
+      }
+      
+      speakText(translatedText, lang);
+    });
+
+    // Language exchange
+    exchangeIcon.addEventListener("click", () => {
+      let tempText = fromText.value,
+          tempLang = selectTags[0].value;
+      fromText.value = toText.value;
+      toText.value = tempText;
+      selectTags[0].value = selectTags[1].value;
+      selectTags[1].value = tempLang;
+    });
+
+    // Copy and individual speak functionality
+    document.querySelectorAll("ion-icon").forEach(icon => {
+      icon.addEventListener("click", ({ target }) => {
+        const name = target.getAttribute("name");
+        const id = target.getAttribute("id");
+
+        if (name === "copy-outline") {
+          navigator.clipboard.writeText(id === "from-copy" ? fromText.value : toText.value)
+            .then(() => console.log("Text copied"))
+            .catch(err => console.error("Copy failed:", err));
+        } else if (name === "volume-medium-outline" && id === "to-speak") {
+          const translatedText = toText.value.trim();
+          if (!translatedText) {
+            alert("Please translate some text first");
+            return;
+          }
+          speakText(translatedText, selectTags[1].value);
+        }
+      });
+    });
+  </script>
+</body>
+</html>t>
+</body>
+</html>
