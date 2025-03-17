@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Input Language Translator</title>
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const fromLanguageSelect = document.querySelector(".from-lang");
+            const toLanguageSelect = document.querySelector(".to-lang");
+            const translateBtn = document.querySelector(".translate-btn");
+            const fromText = document.querySelector(".from-text");
+            const toText = document.querySelector(".to-text");
+            const copyBtn = document.querySelector(".copy-btn");
+            const speakBtn = document.querySelector(".speak-btn");
+
+            const languages = {
+                "en": "English",
+                "es": "Spanish",
+                "fr": "French",
+                "de": "German",
+                "it": "Italian",
+                "zh": "Chinese",
+                "ja": "Japanese",
+                "ru": "Russian",
+                "hi": "Hindi",
+                "ar": "Arabic",
+                "ta": "Tamil",
+                "te": "Telugu",
+                "bn": "Bengali",
+                "mr": "Marathi",
+                "gu": "Gujarati",
+                "kn": "Kannada",
+                "ml": "Malayalam",
+                "pa": "Punjabi",
+                "ur": "Urdu",
+                "pt": "Portuguese",
+                "nl": "Dutch",
+                "ko": "Korean",
+                "tr": "Turkish",
+                "he": "Hebrew",
+                "el": "Greek",
+                "vi": "Vietnamese",
+                "th": "Thai",
+                "pl": "Polish",
+                "sv": "Swedish",
+                "id": "Indonesian",
+                "fa": "Persian",
+                "uk": "Ukrainian"
+            };
+
+            for (let code in languages) {
+                let option1 = document.createElement("option");
+                option1.value = code;
+                option1.innerText = languages[code];
+                fromLanguageSelect.appendChild(option1);
+
+                let option2 = document.createElement("option");
+                option2.value = code;
+                option2.innerText = languages[code];
+                toLanguageSelect.appendChild(option2);
+            }
+
+            fromLanguageSelect.value = "en";
+            toLanguageSelect.value = "es";
+
+            translateBtn.addEventListener("click", async () => {
+                let text = fromText.value.trim();
+                let sourceLang = fromLanguageSelect.value;
+                let targetLang = toLanguageSelect.value;
+
+                if (!text) return alert("Please enter text to translate");
+
+                let url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourceLang}|${targetLang}`;
+
+                try {
+                    let response = await fetch(url);
+                    let data = await response.json();
+                    toText.value = data.responseData.translatedText;
+                } catch (error) {
+                    alert("Translation failed. Please try again.");
+                }
+            });
+
+            copyBtn.addEventListener("click", () => {
+                toText.select();
+                document.execCommand("copy");
+                alert("Translation copied to clipboard");
+            });
+
+            speakBtn.addEventListener("click", () => {
+                let speech = new SpeechSynthesisUtterance(toText.value);
+                speech.lang = toLanguageSelect.value;
+                window.speechSynthesis.speak(speech);
+            });
+        });
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 15px;
+            padding: 30px;
+            width: 100%;
+            max-width: 800px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+            color: #1e3c72;
+        }
+
+        select, textarea, button {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        textarea {
+            height: 120px;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            resize: none;
+            background: #fff;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .buttons button {
+            flex: 1;
+            margin: 5px;
+            padding: 10px 15px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #2a5298;
+            color: white;
+            transition: 0.3s;
+        }
+
+        .buttons button:hover {
+            background: #1e3c72;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Multi-Input Language Translator</h2>
+        <select class="from-lang"></select>
+        <textarea class="from-text" placeholder="Enter text to translate"></textarea>
+        <select class="to-lang"></select>
+        <textarea class="to-text" readonly placeholder="Translation will appear here"></textarea>
+        <div class="buttons">
+            <button class="translate-btn">Translate</button>
+            <button class="speak-btn">Speak</button>
+            <button class="copy-btn">Copy</button>
+        </div>
+    </div>
+</body>
+</html>
