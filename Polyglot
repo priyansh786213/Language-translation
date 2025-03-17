@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Input Language Translator</title>
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #4203a9, #90bafc);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 900px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .translator-box {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .text-input {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            resize: none;
+            background: #f0f0f0;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(66, 3, 169, 0.3);
+            background: #fff;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            background: #fafafa;
+            border-radius: 10px;
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        select {
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            background: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        select:hover {
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        ion-icon {
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+            transition: all 0.3s ease;
+        }
+
+        ion-icon:hover {
+            transform: scale(1.1);
+            color: #4203a9;
+        }
+
+        .exchange ion-icon {
+            font-size: 28px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #4203a9;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(66, 3, 169, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #999;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            .translator-box {
+                padding: 15px;
+            }
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .buttons {
+                flex-direction: column;
+            }
+            textarea {
+                height: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Translator Box 1 -->
+        <div class="translator-box">
+            <div class="text-input">
+                <textarea class="from-text" data-id="1" placeholder="Enter text to translate"></textarea>
+                <div class="controls">
+                    <div class="row">
+                        <select class="from-lang" data-id="1"></select>
+                        <ion-icon class="from-copy" data-id="1" name="copy-outline"></ion-icon>
+                    </div>
+                    <div class="exchange">
+                        <ion-icon class="exchange-btn" data-id="1" name="swap-horizontal-outline"></ion-icon>
+                    </div>
+                    <div class="row">
+                        <select class="to-lang" data-id="1"></select>
+                        <ion-icon class="to-speak" data-id="1" name="volume-high-outline"></ion-icon>
+                        <ion-icon class="to-copy" data-id="1" name="copy-outline"></ion-icon>
+                    </div>
+                </div>
+                <textarea class="to-text" data-id="1" readonly placeholder="Translation will appear here"></textarea>
+            </div>
+            <div class="buttons">
+                <button class="translate-btn" data-id="1">Translate</button>
+                <button class="speak-btn" data-id="1">Speak Translation</button>
+            </div>
+        </div>
+
+        <!-- Translator Box 2 -->
+        <div class="translator-box">
+            <div class="text-input">
+                <textarea class="from-text" data-id="2" placeholder="Enter text to translate"></textarea>
+                <div class="controls">
+                    <div class="row">
+                        <select class="from-lang" data-id="2"></select>
+                        <ion-icon class="from-copy" data-id="2" name="copy-outline"></ion-icon>
+                    </div>
+                    <div class="exchange">
+                        <ion-icon class="exchange-btn" data-id="2" name="swap-horizontal-outline"></ion-icon>
+                    </div>
+                    <div class="row">
+                        <select class="to-lang" data-id="2"></select>
+                        <ion-icon class="to-speak" data-id="2" name="volume-high-outline"></ion-icon>
+                        <ion-icon class="to-copy" data-id="2" name="copy-outline"></ion-icon>
+                    </div>
+                </div>
+                <textarea class="to-text" data-id="2" readonly placeholder="Translation will appear here"></textarea>
+            </div>
+            <div class="buttons">
+                <button class="translate-btn" data-id="2">Translate</button>
+                <button class="speak-btn" data-id="2">Speak Translation</button>
+            </div>
+        </div>
+
+        <!-- Translator Box 3 -->
+        <div class="translator-box">
+            <div class="text-input">
+                <textarea class="from-text" data-id="3" placeholder="Enter text to translate"></textarea>
+                <div class="controls">
+                    <div class="row">
+                        <select class="from-lang" data-id="3"></select>
+                        <ion-icon class="from-copy" data-id="3" name="copy-outline"></ion-icon>
+                    </div>
+                    <div class="exchange">
+                        <ion-icon class="exchange-btn" data-id="3" name="swap-horizontal-outline"></ion-icon>
+                    </div>
+                    <div class="row">
+                        <select class="to-lang" data-id="3"></select>
+                        <ion-icon class="to-speak" data-id="3" name="volume-high-outline"></ion-icon>
+                        <ion-icon class="to-copy" data-id="3" name="copy-outline"></ion-icon>
+                    </div>
+                </div>
+                <textarea class="to-text" data-id="3" readonly placeholder="Translation will appear here"></textarea>
+            </div>
+            <div class="buttons">
+                <button class="translate-btn" data-id="3">Translate</button>
+                <button class="speak-btn" data-id="3">Speak Translation</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const languages = {
+            "en-GB": "English",
+            "es-ES": "Spanish",
+            "fr-FR": "French",
+            "de-DE": "German",
+            "hi-IN": "Hindi",
+            "gu-IN": "Gujarati",
+            "ta-IN": "Tamil",
+            "te-IN": "Telugu",
+            "kn-IN": "Kannada",
+            "mr-IN": "Marathi",
+            "bn-IN": "Bengali",
+            "ur-PK": "Urdu",
+            "pa-IN": "Punjabi",
+            "zh-CN": "Chinese",
+            "ar-SA": "Arabic",
+            "ru-RU": "Russian",
+            "ja-JP": "Japanese",
+            "ko-KR": "Korean",
+            "it-IT": "Italian",
+            "pt-PT": "Portuguese",
+            "nl-NL": "Dutch",
+            "sv-SE": "Swedish",
+            "tr-TR": "Turkish"
+        };
+
+        // Populate all language selectors
+        document.querySelectorAll("select").forEach(select => {
+            const id = select.dataset.id;
+            const isFrom = select.classList.contains("from-lang");
+            for (let lang_code in languages) {
+                let selected = isFrom ? (lang_code === "en-GB" ? "selected" : "") : 
+                              (lang_code === "es-ES" ? "selected" : "");
+                let option = `<option value="${lang_code}" ${selected}>${languages[lang_code]}</option>`;
+                select.insertAdjacentHTML("beforeend", option);
+            }
+        });
+
+        // Speech synthesis check
+        const speechSupported = 'speechSynthesis' in window;
+        if (!speechSupported) {
+            document.querySelectorAll(".speak-btn").forEach(btn => {
+                btn.disabled = true;
+                btn.textContent = "Speech Not Supported";
+            });
+        }
+
+        // Speak function
+        function speakText(text, lang, speakBtn, speakIcon) {
+            if (!speechSupported || !text) return;
+
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = lang;
+            utterance.volume = 1;
+            utterance.rate = 1;
+            utterance.pitch = 1;
+
+            utterance.onstart = () => {
+                speakBtn.disabled = true;
+                speakIcon.style.color = "#4203a9";
+            };
+            utterance.onend = () => {
+                speakBtn.disabled = false;
+                speakIcon.style.color = "";
+            };
+            utterance.onerror = (e) => {
+                console.error("Speech error:", e.error);
+                speakBtn.disabled = false;
+                speakIcon.style.color = "";
+                alert("Speech error: " + e.error);
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Event listeners for each translator box
+        document.querySelectorAll(".translator-box").forEach(box => {
+            const id = box.querySelector(".from-text").dataset.id;
+            const fromText = box.querySelector(".from-text");
+            const toText = box.querySelector(".to-text");
+            const fromLang = box.querySelector(".from-lang");
+            const toLang = box.querySelector(".to-lang");
+            const translateBtn = box.querySelector(".translate-btn");
+            const speakBtn = box.querySelector(".speak-btn");
+            const exchangeBtn = box.querySelector(".exchange-btn");
+            const fromCopy = box.querySelector(".from-copy");
+            const toCopy = box.querySelector(".to-copy");
+            const toSpeak = box.querySelector(".to-speak");
+
+            // Translate
+            translateBtn.addEventListener("click", () => {
+                let text = fromText.value.trim();
+                if (!text) {
+                    toText.value = "";
+                    return;
+                }
+
+                translateBtn.disabled = true;
+                toText.placeholder = "Translating...";
+                toText.value = "";
+
+                let apiUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${fromLang.value}|${toLang.value}`;
+                fetch(apiUrl)
+                    .then(res => res.json())
+                    .then(data => {
+                        toText.value = data.responseData.translatedText || "Translation not available";
+                        toText.placeholder = "Translation will appear here";
+                    })
+                    .catch(error => {
+                        toText.value = "Translation error";
+                        console.error("Translation error:", error);
+                    })
+                    .finally(() => {
+                        translateBtn.disabled = false;
+                    });
+            });
+
+            // Speak
+            speakBtn.addEventListener("click", () => {
+                speakText(toText.value.trim(), toLang.value, speakBtn, toSpeak);
+            });
+
+            toSpeak.addEventListener("click", () => {
+                speakText(toText.value.trim(), toLang.value, speakBtn, toSpeak);
+            });
+
+            // Exchange
+            exchangeBtn.addEventListener("click", () => {
+                let tempText = fromText.value;
+                fromText.value = toText.value;
+                toText.value = tempText;
+                let tempLang = fromLang.value;
+                fromLang.value = toLang.value;
+                toLang.value = tempLang;
+            });
+
+            // Copy
+            fromCopy.addEventListener("click", () => {
+                navigator.clipboard.writeText(fromText.value)
+                    .then(() => fromCopy.style.color = "#4203a9")
+                    .catch(err => console.error("Copy failed:", err));
+                setTimeout(() => fromCopy.style.color = "", 1000);
+            });
+
+            toCopy.addEventListener("click", () => {
+                navigator.clipboard.writeText(toText.value)
+                    .then(() => toCopy.style.color = "#4203a9")
+                    .catch(err => console.error("Copy failed:", err));
+                setTimeout(() => toCopy.style.color = "", 1000);
+            });
+        });
+    </script>
+</body>
+</html>
